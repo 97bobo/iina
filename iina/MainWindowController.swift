@@ -1350,8 +1350,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
       removeTitlebarViewFromFadeableViews()
       titleBarView.isHidden = true
     }
-    removeStandardButtonsFromFadeableViews()
-
+    standardWindowButtons.forEach { $0.alphaValue = 0 }
+    titleTextField?.alphaValue = 0
+    
     setWindowFloatingOnTop(false)
 
     thumbnailPeekView.isHidden = true
@@ -1372,6 +1373,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
   func windowDidEnterFullScreen(_ notification: Notification) {
     screenState.finishAnimating()
+
+    titleTextField?.alphaValue = 1
+    removeStandardButtonsFromFadeableViews()
 
     videoView.videoLayer.mpvGLQueue.resume()
 
@@ -1415,12 +1419,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     if oscPosition == .top {
       oscTopMainViewTopConstraint.constant = OSCTopMainViewMarginTop
       titleBarHeightConstraint.constant = TitleBarHeightWithOSC
-    } else {
-      addBackTitlebarViewToFadeableViews()
-      titleBarView.isHidden = false
-      animationState = .shown
     }
-    addBackStandardButtonsToFadeableViews()
 
     thumbnailPeekView.isHidden = true
     timePreviewWhenSeek.isHidden = true
@@ -1434,6 +1433,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
   func windowDidExitFullScreen(_ notification: Notification) {
     videoView.videoLayer.mpvGLQueue.resume()
+
+    if oscPosition != .top {
+      addBackTitlebarViewToFadeableViews()
+    }
+    addBackStandardButtonsToFadeableViews()
+    titleBarView.isHidden = false
+    showUI()
 
     videoView.videoLayer.mpvGLQueue.async {
       // reset `keepaspect`
